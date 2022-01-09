@@ -1,0 +1,29 @@
+-- declare local variable
+local currentLevel = 0
+--
+--local functions
+local function gameSetup(self)
+	-- this is where game object spawning will start and
+	-- parameters will be initiallised
+end
+--
+function on_message(self, message_id, message, sender)
+	--once splash screen is done get busy
+	if message_id == hash("completedSplash") then
+		--this will tell me splash is done
+		print("splash done")
+		msg.post("/mainMenu#main_menu", "startGame")
+		gameSetup(self)
+	elseif message_id == hash("startLevel1") then
+		currentLevel = 1
+		--starts level 1, for test will just print
+		print("would start 1")
+	elseif message_id == hash("startLevel2") then
+		currentLevel = 2
+		--same story as above
+		print("would start 2")
+	elseif message_id == hash("exitGame") then
+		print("exiting")
+		msg.post("@system:", "exit", {code = 0})
+	end
+end

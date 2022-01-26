@@ -1,6 +1,10 @@
+frequency = 0.8
+t = 1/frequency
 function init(self)
+	print(msg.url())
 	msg.post(".", "acquire_input_focus")
 	self.vel = vmath.vector3()
+	self.health = 100
 end
 
 function update(self, dt)
@@ -11,6 +15,10 @@ function update(self, dt)
 	self.vel.x = 0
 	self.vel.y = 0
 	self.correction = vmath.vector3()
+
+	if self.health <= 0 then
+		msg.post("@system:", "exit", {code = 0})
+	end
 end
 
 function on_input(self, action_id, action)
@@ -33,5 +41,15 @@ end
 function on_message(self, message_id, message, sender)
 	if message_id == hash("contact_point_response") and message.group == hash("wall") then
 		go.set_position(go.get_position() + message.normal * message.distance)
+	elseif message_id == hash("contact_point_response") and message.group == hash("melee") then
+		go.set_position(go.get_position() + message.normal * message.distance)
+	elseif message_id == hash("damage") then
+		self.health = self.health - message.damage
+		print(self.health)
+		damage(self)
 	end
+end
+
+function damage(self)
+	msg.post("main:/ui#ui", "damage", {health=self.health})
 end

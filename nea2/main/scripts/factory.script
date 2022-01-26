@@ -1,0 +1,7 @@
+function init(self)
+	p = go.get_position()
+	p.x = 400
+	p.y = 400
+	factory.create("/factory#enemy", p)
+	print("should spawn enemy somewhere")
+end

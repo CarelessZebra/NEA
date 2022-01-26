@@ -1,0 +1,12 @@
+function init(self)
+	self.health = gui.get_node("health")
+	self.hback = gui.get_node("hback")
+end
+
+function on_message(self, message_id, message, sender)
+	--the only message this will ever recieve is to reduce health so I won't bother with the if statements
+	--scale the node based on the health of the player that is passed through the message
+	local scale = gui.get_scale(self.health)
+	scale.x = message.health/100
+	gui.set_scale(self.health, scale)
+end

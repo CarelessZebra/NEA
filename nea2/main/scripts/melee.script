@@ -1,0 +1,29 @@
+function init(self)
+	self.vel = vmath.vector3()
+	self.vel.x = 50
+	self.damage = 10
+end
+
+function update(self, dt)
+	local pos = go.get_position()
+	pos = pos + self.vel * dt 
+	go.set_position(pos)
+	self.correction = vmath.vector3()
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("contact_point_response") and message.group == hash("wall") then
+		go.set_position(go.get_position() + message.normal * message.distance)
+		print("hello")
+		self.vel.x = -self.vel.x
+	end
+	if message_id == hash("trigger_response") and message.group == hash("player") then
+		print("player contact")
+		if message.enter then
+			sprite.play_flipbook("#sprite", hash("melee_attack"))
+			msg.post("default:/player#player1", "damage", {damage = self.damage})
+		else
+			sprite.play_flipbook("#sprite", hash("melee_idle"))
+		end
+	end
+end

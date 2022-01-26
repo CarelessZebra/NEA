@@ -81,12 +81,12 @@ end
 
 function on_input(self, action_id, action)
 	--does the selectLevel1 button stuff
-	if action.pressed and gui.pick_node(gui.get_node("selectLevel1"), action.x, action.y) then
+	if action.pressed and gui.pick_node(gui.get_node("selectLevel1"), action.x, action.y) and action_id == hash("touch") then
 		-- set image to 'buttonPressed' 
 		gui.play_flipbook(self.selectLevel1, hash("blueButton_Pressed"))
 	end
 
-	if action.released and gui.pick_node(gui.get_node("selectLevel1"), action.x, action.y) then
+	if action.released and gui.pick_node(gui.get_node("selectLevel1"), action.x, action.y) and action_id == hash("touch") then
 		-- set image to "buttonReleased" when the button is released 
 		gui.play_flipbook(self.selectLevel1, hash("blueButton_Released"))
 
@@ -95,23 +95,23 @@ function on_input(self, action_id, action)
 	end
 
 	--same story for selectLevel2
-	if action.pressed and gui.pick_node(gui.get_node("selectLevel2"), action.x, action.y) then
+	if action.pressed and gui.pick_node(gui.get_node("selectLevel2"), action.x, action.y) and action_id == hash("touch") then
 		gui.play_flipbook(self.selectLevel2, hash("blueButton_Pressed"))
 	end
 
-	if action.released and gui.pick_node(gui.get_node("selectLevel2"), action.x, action.y) then
+	if action.released and gui.pick_node(gui.get_node("selectLevel2"), action.x, action.y) and action_id == hash("touch") then
 		gui.play_flipbook(self.selectLevel2, hash("blueButton_Released"))
 		msg.post("/controller#main_controller", "startLevel2")
 	end
 
 	--exit
-	if action.pressed and gui.pick_node(self.exit, action.x, action.y) then
+	if action.pressed and gui.pick_node(self.exit, action.x, action.y) and action_id == hash("touch") then
 		if gui.is_enabled(self.exit) then
 			gui.play_flipbook(self.exit, hash("blueButton_Pressed"))
 		end
 	end
 
-	if action.released and gui.pick_node(self.exit, action.x, action.y) then
+	if action.released and gui.pick_node(self.exit, action.x, action.y) and action_id == hash("touch") then
 
 		gui.play_flipbook(self.exit, hash("blueButton_Released"))
 

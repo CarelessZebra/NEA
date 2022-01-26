@@ -20,12 +20,12 @@ function on_message(self, message_id, message, sender)
 end
 
 function on_input(self, action_id, action)
-	if action.pressed and gui.pick_node(gui.get_node("back"), action.x, action.y) then
+	if action.pressed and gui.pick_node(gui.get_node("back"), action.x, action.y) and action_id == hash("touch") then
 		-- set image to 'buttonPressed' 
 		gui.play_flipbook(self.back, hash("blueButton_Pressed"))
 	end
 
-	if action.released and gui.pick_node(gui.get_node("back"), action.x, action.y) then
+	if action.released and gui.pick_node(gui.get_node("back"), action.x, action.y) and action_id == hash("touch") then
 		-- set image to "buttonReleased" when the button is released 
 		gui.play_flipbook(self.back, hash("blueButton_Released"))
 		--makes the main menu appear, the pause menu disappear and destroys level 1

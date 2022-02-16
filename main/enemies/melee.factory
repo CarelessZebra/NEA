@@ -1,0 +1,2 @@
+prototype: "/main/enemies/melee.go"
+load_dynamically: false

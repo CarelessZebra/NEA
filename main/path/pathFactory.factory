@@ -1,0 +1,2 @@
+prototype: "/main/path/path.go"
+load_dynamically: false

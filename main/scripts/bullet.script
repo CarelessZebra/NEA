@@ -1,0 +1,6 @@
+function on_message(self, message_id, message, sender)
+	if message_id == hash("collision_response") then
+		--deletes bullets once they've collided with something
+		go.delete()
+	end
+end

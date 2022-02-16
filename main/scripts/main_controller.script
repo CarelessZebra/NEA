@@ -1,0 +1,62 @@
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	self.paused = false
+end
+-- declare local variable
+local currentLevel = 0
+--
+--local functions
+local function gameSetup(self)
+	-- this is where game object spawning will start and
+	-- parameters will be initiallised
+end
+--
+function on_message(self, message_id, message, sender)
+	--once splash screen is done get busy
+	if message_id == hash("completedSplash") then
+		--this will tell me splash is done
+		print("splash done")
+		msg.post("/mainMenu#main_menu", "startGame")
+		gameSetup(self)
+	elseif message_id == hash("startLevel1") then
+		currentLevel = 1
+		--starts level 1, for test will just print
+		print("should start 1")
+		msg.post("/controller#level1_proxy", "load")
+		msg.post("main:/controller#level1_proxy", "enable")
+		msg.post("main:/ui#ui", "enable")
+		msg.post("main:/ui#ui", "display")
+		msg.post("/controller", "set_time_step", {factor = 1, mode = 1})
+		msg.post("/mainMenu#main_menu", "disable")
+	elseif message_id == hash("startLevel2") then
+		currentLevel = 2
+		--same story as above
+		print("would start 2")
+	elseif message_id == hash("exitGame") then
+		print("exiting")
+		msg.post("@system:", "exit", {code = 0})
+	elseif message_id == hash("proxy_loaded") then
+		msg.post(sender, "init")
+		msg.post(sender, "enable")
+	end
+
+	if message_id == hash("pause") then
+		if self.paused == false then
+			msg.post("main:/pause#pause", "enable")
+			msg.post("/controller", "set_time_step", {factor = 0, mode = 1})
+			msg.post("main:/pause#pause", "display")
+			self.paused = true
+		else
+			msg.post("/controller", "set_time_step", {factor = 1, mode = 1})
+			msg.post("main:/pause#pause", "hide")
+			self.paused = false
+		end
+	end
+end
+
+function on_action(self, action_id, action)
+	if action_id == hash("pause") then
+		print("paused")
+		msg.post("/controller#level1_proxy", "set_time_step", {factor = 0, mode = 1})
+	end
+end

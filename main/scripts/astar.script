@@ -1,0 +1,110 @@
+local astar = require("main/scripts/astar")
+local level = {}
+local level_cost = {}
+local paths = {}
+function init(self)
+	--get bounds of level
+	local levelX, levelY, w, h = tilemap.get_bounds("default:/map#level1")
+	self.level_size = vmath.vector3(w, h, 0)
+	self.w = w
+	self.h = h
+
+	--gives floor tiles a lower cost than wall tiles
+	level_cost[83] = 1
+	level_cost[84] = 1
+	level_cost[87] = 1
+	level_cost[88] = 1
+	level_cost[89] = 1
+	level_cost[90] = 1
+	level_cost[91] = 1
+	level_cost[92] = 1
+	level_cost[93] = 1
+	level_cost[94] = 1
+	level_cost[95] = 1
+	level_cost[96] = 1
+	level_cost[98] = 1
+	level_cost[84] = 1
+	level_cost[104] = 1
+	level_cost[105] = 1
+	level_cost[107] = 1
+	level_cost[108] = 1
+	level_cost[116] = 1
+	level_cost[117] = 1
+	level_cost[118] = 1
+	
+	--add each tile to level and initialise the cost of unassigned tiles to "infinity"
+	
+	for tY = 0, h-1 do
+		for tX = 0, w-1 do
+			local tile = tilemap.get_tile("default:/map#level1", hash("floor"), tX + 1, tY + 1)
+			local tile_cost = level_cost[tile]
+			
+			if tile_cost == nil then
+				tile = 10000
+			end
+			--add tiles to level array giving them index to reference them by
+			level[tY * w + tX + 1] = tile
+		end
+	end
+end
+
+function generate_path(start, goal, level, width, height, id)
+	go.delete_all(paths)
+	paths = {}
+	--pass the required parameters into the lua module to return the lists last and cost
+	last, costs = astar.astar( {width, height}, level, goal, start )
+	--starts at end of list and goes back to last node each time using the last table
+	local current = goal
+	while current ~= start do
+		if current == nil then
+			break
+		end
+		
+		local x = math.floor((current-1) % width)
+		local y = math.floor((current-1) / width)
+		local screen_x = 8 * x + 4
+		local screen_y = 8 * y + 4
+
+		local dir = -(go.get_position(id) - vmath.vector3(screen_x, screen_y, 0))
+		dir.z = 0
+		go.set(id, "dir", dir)
+		
+		if current ~= goal then
+			local pathItem = factory.create("default:/map#pathFactory", vmath.vector3(screen_x, screen_y, 2) )
+			paths[current] = pathItem
+		end
+
+		--backtracks through tables to go through every node
+		local next = last[current]
+		local cost = costs[current]
+		current = next
+	end
+	return screen_x, screen_y
+end
+
+function tile_coord(x, y)
+	--convert screen position to tile position
+	return math.floor(x/8), math.floor(y/8)
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("astar") then
+		--get player position in the same way
+		local goal = go.get_position("default:/player#player1")
+		local goal_t_x, goal_t_y = tile_coord(goal.x, goal.y)
+
+		goal = goal_t_y * self.w + goal_t_x + 1
+		--gets position of each enemy in the ids table
+		for i, id in ipairs(ids) do
+			local start = go.get_position(id)
+			local start_t_x, start_t_y = tile_coord(start.x, start.y)
+			start = start_t_y * self.w + start_t_x + 1
+			generate_path(start, goal, level, self.w, self.h, id)
+		end
+	end
+end
+	
+
+
+
+	

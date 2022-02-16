@@ -1,0 +1,149 @@
+local function completeSplash()
+	print("doing the splash thing")
+	msg.post("/controller#main_controller", "completedSplash")
+end
+
+--logo animation
+local function animateLogos2(self)
+	print("doing animateLogos2")
+	local to_colour = gui.get_color(self.gameLogo)
+	to_colour.w = 0
+	gui.animate(self.gameLogo, gui.PROP_COLOR, to_colour, gui.EASING_IN, 0.5, 2, completeSplash)
+end
+
+local function animateLogos(self)
+	print("doing animateLogos")
+	--delay for the animations
+	local delay = 0.75
+	if self.setup == true then
+		--set alpha to 0 to fade in and get current colour
+		local from_colour = gui.get_color(self.gameLogo)
+		local to_colour = gui.get_color(self.gameLogo)
+		from_colour.w = 0
+		gui.set_color(self.gameLogo, from_colour)
+		self.setup = false
+		--animate alpha up to 1 as it fades in
+		gui.animate(self.gameLogo, gui.PROP_COLOR, to_colour, gui.EASING_IN, 1.5, delay, animateLogos2)
+	else
+		msg.post("/controller#main_controller", "completedSplash")
+	end
+end
+--
+--button animation
+local function animateButton2(self, node)
+	-- Animates scale back up to 100%
+	local s = 1
+	gui.animate(node, gui.PROP_SCALE, vmath.vector4(s, s, s, 0), gui.EASING_INOUT, 0.25, 0)
+end
+
+
+local function animateButton(node, d)
+
+	print("Executing animateButton")
+	-- changes scale
+	local start_scale = 0.5
+	gui.set_scale(node, vmath.vector4(start_scale, start_scale, start_scale, 0))
+
+	-- Get the current color and set alpha to 0 
+	local from_color = gui.get_color(node)
+	local to_color = gui.get_color(node)
+	from_color.w = 0
+	gui.set_color(node, from_color)
+
+	-- Animate the alpha value to 1
+	gui.animate(node, gui.PROP_COLOR, to_color, gui.EASING_IN, 0.2, d)
+
+	-- Animate the scale up to 1.2 then call second function
+	local s = 1.2
+	gui.animate(node, gui.PROP_SCALE, vmath.vector4(s, s, s, 0),
+	gui.EASING_IN, 0.2, d, animateButton2)
+end
+--
+
+function init(self)
+	self.setup = true
+	msg.post(".", "acquire_input_focus")
+	msg.post("main:/pause#pause", "enable")
+	msg.post("main:/pause#pause", "init")
+	--makes the nodes work
+	self.splashBackground = gui.get_node("splashBackground")
+	self.gameLogo = gui.get_node("gameLogo")
+	self.selectLevel1 = gui.get_node("selectLevel1")
+	self.selectLevel2 = gui.get_node("selectLevel2")
+	self.exit = gui.get_node("exit")
+	self.steak = gui.get_node("steak")
+	--starts the animation cascade for logos
+	animateLogos(self)
+	--disable nodes until splash screen is done 
+	gui.set_enabled(self.selectLevel1, false)
+	gui.set_enabled(self.selectLevel2, false)
+	gui.set_enabled(self.exit, false)
+	gui.set_enabled(self.steak, false)
+end
+
+function on_input(self, action_id, action)
+	--does the selectLevel1 button stuff
+	if action.pressed and gui.pick_node(gui.get_node("selectLevel1"), action.x, action.y) and action_id == hash("touch") then
+		-- set image to 'buttonPressed' 
+		gui.play_flipbook(self.selectLevel1, hash("blueButton_Pressed"))
+	end
+
+	if action.released and gui.pick_node(gui.get_node("selectLevel1"), action.x, action.y) and action_id == hash("touch") then
+		-- set image to "buttonReleased" when the button is released 
+		gui.play_flipbook(self.selectLevel1, hash("blueButton_Released"))
+
+		-- shoot a message to the controller that level 1 is a go
+		msg.post("/controller#main_controller", "startLevel1")
+	end
+
+	--same story for selectLevel2
+	if action.pressed and gui.pick_node(gui.get_node("selectLevel2"), action.x, action.y) and action_id == hash("touch") then
+		gui.play_flipbook(self.selectLevel2, hash("blueButton_Pressed"))
+	end
+
+	if action.released and gui.pick_node(gui.get_node("selectLevel2"), action.x, action.y) and action_id == hash("touch") then
+		gui.play_flipbook(self.selectLevel2, hash("blueButton_Released"))
+		msg.post("/controller#main_controller", "startLevel2")
+	end
+
+	--exit
+	if action.pressed and gui.pick_node(self.exit, action.x, action.y) and action_id == hash("touch") then
+		if gui.is_enabled(self.exit) then
+			gui.play_flipbook(self.exit, hash("blueButton_Pressed"))
+		end
+	end
+
+	if action.released and gui.pick_node(self.exit, action.x, action.y) and action_id == hash("touch") then
+
+		gui.play_flipbook(self.exit, hash("blueButton_Released"))
+
+		-- shoot controller message for exit
+		msg.post("/controller#main_controller", "exitGame")
+
+		-- disable main menu nodes
+		gui.set_enabled(self.selectLevel1, false)
+		gui.set_enabled(self.selectLevel2, false)
+		gui.set_enabled(self.exit, false)
+		gui.set_enabled(self.steak, false)
+	end	
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("startGame") then
+
+		print("doing startGame")
+
+		gui.set_enabled(self.splashBackground, false)
+		gui.set_enabled(self.gameLogo, false)
+		gui.set_enabled(self.selectLevel1, true)
+		gui.set_enabled(self.selectLevel2, true)
+		gui.set_enabled(self.exit, true)
+		gui.set_enabled(self.steak, true)
+		
+		-- animates the buttons appearing
+		animateButton(self.exit, 1.3)
+		animateButton(self.selectLevel2, 0.8)
+		animateButton(self.selectLevel1, 0.5)
+	end
+end
+	

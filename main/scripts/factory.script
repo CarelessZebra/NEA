@@ -1,0 +1,13 @@
+ids = {}
+
+function init(self)
+	p = go.get_position()
+	
+	for i = 0, 4 do
+		p.x = math.random(8, 100)
+		p.y = math.random(8, 100)
+		local id = factory.create("/factory#enemy", p)
+	end
+	
+	print("should spawn enemy somewhere")
+end

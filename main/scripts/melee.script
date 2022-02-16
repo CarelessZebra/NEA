@@ -1,0 +1,43 @@
+t=2
+go.property("dir", vmath.vector3(0, 0, 0))
+function init(self)
+	print(msg.url())
+	self.vel = 20
+	self.damage = 10
+	self.health = 20
+	table.insert(ids, msg.url())
+end
+
+function update(self, dt)
+	local pos = go.get_position()
+	t=t-dt
+	if self.health <= 0 then
+		table.remove(ids, self.path)
+		msg.post(".", "disable")
+	end
+	
+	self.dir = vmath.normalize(self.dir)
+	pos = pos + self.dir * self.vel * dt
+	go.set_position(pos)
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("contact_point_response") and message.group == hash("wall") then
+		go.set_position(go.get_position() + message.normal * message.distance)
+	end
+	if self.dir.x > 0 then
+		sprite.set_hflip("#sprite", true)
+	else
+		sprite.set_hflip("#sprite", false)
+	end
+	
+	if message_id == hash("trigger_response") and message.group == hash("player") then
+		print("player contact")
+		if message.enter then
+			msg.post("default:/player#player1", "damage", {damage = self.damage})
+		end
+	end
+	if message_id == hash("collision_response") and message.group == hash("bullet") then
+		self.health = self.health - 5
+	end
+end

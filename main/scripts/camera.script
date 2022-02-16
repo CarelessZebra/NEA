@@ -1,0 +1,15 @@
+function init(self)
+	print(msg.url())
+	msg.post("#camera", "acquire_camera_focus")
+	print("bah dum tsh")
+	print(msg.url())
+	msg.post("@render:", "use_fixed_projection", { zoom = 4, near = -4, far = 4 })
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("follow") then
+		print("sender"..sender)
+		go.set_parent(".", sender)
+		go.set_position(vmath.vector3(-640, -360, 0))
+	end
+end
